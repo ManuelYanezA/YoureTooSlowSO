@@ -1,5 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <errno.h>
 
 
 int main (){
@@ -55,7 +59,6 @@ int main (){
         }while(matriz[randomx][randomy]!=0);
         matriz[randomx][randomy]=array[i];
     }
-    return 0;
 }
 /*
 for(i=0;i<tamano;i++){
