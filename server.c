@@ -5,7 +5,6 @@
 #include <sys/wait.h>
 #include <errno.h>
 
-
 int main (){
     int numerojugadores = 5;
     int tamano;
@@ -59,6 +58,24 @@ int main (){
         }while(matriz[randomx][randomy]!=0);
         matriz[randomx][randomy]=array[i];
     }
+    if(numerojugadores>=2){
+        int pid1[2],pid2[2],pid3[2],pid4[2];
+        pipe(pid1);
+        pipe(pid2);
+        pipe(pid3);
+        pipe(pid4);
+    }
+    if(numerojugadores>=3){
+        int pid5[2],pid6[2];
+        pipe(pid5);
+        pipe(pid6);
+    }
+    if(numerojugadores==4){
+        int pid7[2],pid8[2];
+        pipe(pid7);
+        pipe(pid8);
+    }
+    return 0;
 }
 /*
 for(i=0;i<tamano;i++){
