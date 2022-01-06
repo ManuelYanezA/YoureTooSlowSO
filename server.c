@@ -22,6 +22,13 @@
 
 
 int main (){
+    //En caso de existir, cierra las tuberías abiertas.
+    unlink(FIFONAME);
+    unlink(FIFONAME_J1);
+    unlink(FIFONAME_J2);
+    unlink(FIFONAME_J3);
+    unlink(FIFONAME_J4);
+
     int numerojugadores = 5;
     int tamano;
     int valores;
@@ -74,67 +81,102 @@ int main (){
         }while(matriz[randomx][randomy]!=0);
         matriz[randomx][randomy]=array[i];
     }
-    /* no se si borrar esta parte asique la dejo comentada
     if(numerojugadores>=2){
-        int pid1[2],pid2[2],pid3[2],pid4[2];
         int j1, j2;
 
-        pipe(pid1); //PID Impar: De server a client
-        pipe(pid2); //PID Par: De client a server
+        //Crea las tuberías, retorna un error de salir algo mal en el proceso
+        if(mkfifo(FIFONAME, 666)){ //Nombre tubería, permisos
+            perror("mkfifo");
+            return(1);
+        }
+        if(mkfifo(FIFONAME_J1, 666)){
+            perror("mkfifo");
+            return(1);
+        }
+        if(mkfifo(FIFONAME_J2, 666)){
+            perror("mkfifo");
+            return(1);
+        }
+
+        //Definiciones para guardar el valor retornado al abrir tuberías
+        int fd_g, fd_c1, fd_c2;
+
+        //Abre tubería general y de jugadores 1 y 2
+        if(fd_g = open(FIFONAME, O_RDWR) < 0){
+            perror("open");
+            return(2);
+        }
+        if(fd_c1 = open(FIFONAME_J1, O_RDWR) < 0){
+            perror("open");
+            return(2);
+        }
+        if(fd_c2 = open(FIFONAME_J2, O_RDWR) < 0){
+            perror("open");
+            return(2);
+        }
 
         j1 = fork(); //Se hace fork y el pid se almacena en j1
         if(j1 == 0){ //Caso en el que el fork retorne 0, es decir, esta parte se ejecuta en el hijo (o client)
-            char *args[] = {"./client",NULL};
-            execvp(args[0],args);
+            printf("Cliente Jugador 1\n");
         }
         else{ //Caso en el que el fork retorna un PID, es decir, esta parte la ejecuta el server
             printf("PID Jugador 1: %d\n", j1);
         }
 
-        pipe(pid3);
-        pipe(pid4);
-
         j2 = fork();
         if(j2 == 0){ //Ejecutado por cliente
-            char *args[] = {"./client",NULL};
-            execvp(args[0],args);
+            printf("Cliente Jugador 2\n");
         }
         else{ //Ejecutado aquí en server
             printf("PID Jugador 2: %d\n", j2);
         }
     }
     if(numerojugadores>=3){
-        int pid5[2],pid6[2];
-        int j3;
+        int j3, fd_c3;
 
-        pipe(pid5);
-        pipe(pid6);
+        
+
+        //Tubería de Jugador 3
+        if(mkfifo(FIFONAME_J3, 666)){
+            perror("mkfifo");
+            return(1);
+        }
+        //Abre tubería de jugador 3
+        if(fd_c3 = open(FIFONAME_J3, O_RDWR) < 0){
+            perror("open");
+            return(2);
+        }
 
         j3 = fork();
         if(j3 == 0){ //Ejecutado por cliente
-            char *args[] = {"./client",NULL};
-            execvp(args[0],args);
+            printf("Cliente Jugador 3\n");
         }
         else{ //Ejecutado aquí en server
             printf("PID Jugador 3: %d\n", j3);
         }        
     }
     if(numerojugadores==4){
-        int pid7[2],pid8[2];
-        int j4;
+        int j4, fd_c4;
 
-        pipe(pid7);
-        pipe(pid8);
+        //Tubería de Jugador 4
+        if(mkfifo(FIFONAME_J4, 666)){
+            perror("mkfifo");
+            return(1);
+        }
+        //Abre tubería de jugador 4
+        if(fd_c4 = open(FIFONAME_J3, O_RDWR) < 0){
+            perror("open");
+            return(2);
+        }
 
         j4 = fork();
         if(j4 == 0){ //Ejecutado por cliente
-            char *args[] = {"./client",NULL};
-            execvp(args[0],args);
+            printf("Cliente Jugador 4\n");
         }
         else{ //Ejecutado aquí en server
             printf("PID Jugador 4: %d\n", j4);
         }
-    }*/
+    }
     return 0;
 }
 /*
