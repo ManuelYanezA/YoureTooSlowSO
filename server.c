@@ -104,19 +104,23 @@ int main (){
         }
 
         //Abre tubería general y de jugadores 1 y 2
-        if(fd_g = open(FIFONAME, O_RDWR) < 0){
-            perror("open");
-            return(2);
-        }
-        if(fd_c1 = open(FIFONAME_J1, O_RDWR) < 0){
-            perror("open");
-            return(2);
-        }
-        if(fd_c2 = open(FIFONAME_J2, O_RDWR) < 0){
-            perror("open");
-            return(2);
+        if ((fd_c1 = open(FIFONAME_J1, O_RDWR)) < 0)
+        {
+            perror("open C1");
+            exit(1);
         }
 
+        if ((fd_c2 = open(FIFONAME_J2, O_RDWR)) < 0)
+        {
+            perror("open C2");
+            exit(1);
+        }
+
+        if ((fd_g = open(FIFONAME, O_RDWR)) < 0)
+        {
+            perror("open FDG");
+            exit(1);
+        }
         j1 = fork(); //Se hace fork y el pid se almacena en j1
         if(j1 == 0){ //Caso en el que el fork retorne 0, es decir, esta parte se ejecuta en el hijo (o client)
             printf("Cliente Jugador 1: %d\n", getpid());
@@ -140,7 +144,10 @@ int main (){
                 perror("mkfifo");
                 return(1);
             }
-
+            if ((fd_c3 = open(FIFONAME_J3, O_RDWR)) < 0){
+                perror("open C3");
+                exit(1);
+            }
             j3 = fork();
             if(j3 == 0){ //Ejecutado por cliente
                 printf("Cliente Jugador 3\n");
@@ -157,7 +164,11 @@ int main (){
                 perror("mkfifo");
                 return(1);
             }
-            
+            if ((fd_c4 = open(FIFONAME_J4, O_RDWR)) < 0)
+            {
+                perror("open C4");
+                exit(1);
+            }
             j4 = fork();
             if(j4 == 0){ //Ejecutado por cliente
                 printf("Cliente Jugador 4\n");
@@ -197,83 +208,91 @@ int main (){
 }
 
 void run2Players(int j1, int j2, int fd_c1, int fd_c2, int fd){
-    if ((fd_c1 = open(FIFONAME_J1, O_RDWR)) < 0)
-    {
-        perror("open C1");
-        exit(1);
-    }
-
-    if ((fd_c2 = open(FIFONAME_J2, O_RDWR)) < 0)
-    {
-        perror("open C2");
-        exit(1);
-    }
-
-    if ((fd = open(FIFONAME, O_RDWR)) < 0)
-    {
-        perror("open FDG");
-        exit(1);
-    }
     printf("Caso de 2 jugadores\n");
+    int x=0,y=0,n;
+    char buffer[1024];
+    while(1){
+        if ((n = read(fd, buffer, sizeof(buffer))) > 0)
+        {
+            write(1, buffer, n);
+            x = buffer[0] - '0';
+        }
+        if ((n = read(fd, buffer, sizeof(buffer))) > 0)
+        {
+            write(1, buffer, n);
+            y = buffer[0] - '0';
+        }
+        if (j1==0)
+        { //juagado 1
+            write(fd_c1, "este es un mensaje\n", 21);
+        }
+        else
+        { //jugador 2
+            write(fd_c2, "este es un mensaje 2\n", 21);
+        }
+    }
 }
 void run3Players(int j1, int j2, int j3, int fd_c1, int fd_c2, int fd_c3, int fd){
-    if ((fd_c1 = open(FIFONAME_J1, O_RDWR)) < 0)
-    {
-        perror("open C1");
-        exit(1);
-    }
-
-    if ((fd_c2 = open(FIFONAME_J2, O_RDWR)) < 0)
-    {
-        perror("open C2");
-        exit(1);
-    }
-
-    if ((fd = open(FIFONAME, O_RDWR)) < 0)
-    {
-        perror("open FDG");
-        exit(1);
-    }
-
-    if ((fd_c3 = open(FIFONAME_J3, O_RDWR)) < 0)
-    {
-        perror("open C3");
-        exit(1);
-    }
     printf("Caso de 3 jugadores\n");
+    int x=0,y=0,n;
+    char buffer[1024];
+    while(1){
+        if ((n = read(fd, buffer, sizeof(buffer))) > 0)
+        {
+            write(1, buffer, n);
+            x = buffer[0] - '0';
+        }
+        if ((n = read(fd, buffer, sizeof(buffer))) > 0)
+        {
+            write(1, buffer, n);
+            y = buffer[0] - '0';
+        }
+        if (j1==0)
+        { //juagado 1
+            write(fd_c1, "este es un mensaje\n", 21);
+        }
+        else if(j2==0)
+        { //jugador 2
+            write(fd_c2, "este es un mensaje 2\n", 21);
+        }
+        else{
+            write(fd_c3, "este es un mensaje 2\n", 21);
+        }
+    }
 }
 
 void run4Players(int j1, int j2, int j3, int j4, int fd_c1, int fd_c2, int fd_c3, int fd_c4, int fd){
-    if ((fd_c1 = open(FIFONAME_J1, O_RDWR)) < 0)
-    {
-        perror("open C1");
-        exit(1);
-    }
-
-    if ((fd_c2 = open(FIFONAME_J2, O_RDWR)) < 0)
-    {
-        perror("open C2");
-        exit(1);
-    }
-
-    if ((fd = open(FIFONAME, O_RDWR)) < 0)
-    {
-        perror("open FDG");
-        exit(1);
-    }
-
-    if ((fd_c3 = open(FIFONAME_J3, O_RDWR)) < 0)
-    {
-        perror("open C3");
-        exit(1);
-    }
-    
-    if ((fd_c4 = open(FIFONAME_J4, O_RDWR)) < 0)
-    {
-        perror("open C4");
-        exit(1);
-    }
     printf("Caso de 4 jugadores\n");
+    int x=0,y=0,n;
+    char buffer[1024];
+    while(1){
+        if ((n = read(fd, buffer, sizeof(buffer))) > 0)
+        {
+            write(1, buffer, n);
+            x = buffer[0] - '0';
+        }
+        if ((n = read(fd, buffer, sizeof(buffer))) > 0)
+        {
+            write(1, buffer, n);
+            y = buffer[0] - '0';
+        }
+        if (j1==0)
+        { //juagado 1
+            write(fd_c1, "este es un mensaje\n", 21);
+        }
+        else if(j2==0)
+        { //jugador 2
+            write(fd_c2, "este es un mensaje 2\n", 21);
+        }
+        else if(j3==0)
+        {
+            write(fd_c3, "este es un mensaje 2\n", 21);
+        }
+        else
+        {
+            write(fd_c4, "este es un mensaje 2\n", 21);
+        }
+    }
 }
 
 /*

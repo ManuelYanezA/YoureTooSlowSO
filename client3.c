@@ -18,8 +18,35 @@
 #define FIFONAME_J3 "YourTooSlow_j3"
 
 int main(){
-    printf("Saludos desde el archivo client.c\n");
-    int pid = getpid();
-    printf("PID cliente: %d", pid);
-    return 0;
+    int n, fd_g, fd_c3;
+    char buffer[1024];
+    if ((fd_c3 = open(FIFONAME_J3, O_RDWR)) < 0)
+    {
+       perror("open C3");
+       exit(1);
+    }
+    if ((fd_g = open(FIFONAME, O_RDWR)) < 0)
+    {
+        perror("open FDG");
+        exit(1);
+    }
+    while(1){
+        //Envía coordenadas al servidor
+        printf("Coordenada x : \n");
+        if ((n = read(0, buffer, sizeof(buffer))) > 0)
+        {
+            write(fd_g, buffer, n);
+        }
+
+        printf("Coordenada y : \n");
+        if ((n = read(0, buffer, sizeof(buffer))) > 0)
+        {
+            write(fd_g, buffer, n);
+        }
+
+        if ((n = read(fd_c3, buffer, sizeof(buffer))) > 0)
+        {
+            write(1, buffer, n);
+        }
+    }
 }
