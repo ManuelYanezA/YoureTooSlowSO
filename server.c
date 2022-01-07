@@ -20,7 +20,9 @@
 #define FIFONAME_J3 "YourTooSlow_j3"
 #define FIFONAME_J4 "YourTooSlow_j4"
 
-
+void run2Players(int j1, int j2, int fd_c1, int fd_c2, int fd);
+void run3Players(int j1, int j2, int j3, int fd_c1, int fd_c2, int fd_c3, int fd);
+void run4Players(int j1, int j2, int j3, int j4, int fd_c1, int fd_c2, int fd_c3, int fd_c4, int fd);
 int main (){
     //En caso de existir, cierra las tuberías abiertas.
     unlink(FIFONAME);
@@ -81,9 +83,12 @@ int main (){
         }while(matriz[randomx][randomy]!=0);
         matriz[randomx][randomy]=array[i];
     }
-    if(numerojugadores>=2){
-        int j1, j2;
+    //PIDs guardados de los procesos hijos de cada jugador
+    int j1, j2, j3, j4;
+    //Definiciones para guardar el valor retornado al abrir tuberías
+    int fd_g, fd_c1, fd_c2, fd_c3, fd_c4;
 
+    if(numerojugadores>=2){
         //Crea las tuberías, retorna un error de salir algo mal en el proceso
         if(mkfifo(FIFONAME, 666)){ //Nombre tubería, permisos
             perror("mkfifo");
@@ -97,9 +102,6 @@ int main (){
             perror("mkfifo");
             return(1);
         }
-
-        //Definiciones para guardar el valor retornado al abrir tuberías
-        int fd_g, fd_c1, fd_c2;
 
         //Abre tubería general y de jugadores 1 y 2
         if(fd_g = open(FIFONAME, O_RDWR) < 0){
@@ -117,68 +119,163 @@ int main (){
 
         j1 = fork(); //Se hace fork y el pid se almacena en j1
         if(j1 == 0){ //Caso en el que el fork retorne 0, es decir, esta parte se ejecuta en el hijo (o client)
-            printf("Cliente Jugador 1\n");
+            printf("Cliente Jugador 1: %d\n", getpid());
         }
         else{ //Caso en el que el fork retorna un PID, es decir, esta parte la ejecuta el server
             printf("PID Jugador 1: %d\n", j1);
-        }
-
-        j2 = fork();
-        if(j2 == 0){ //Ejecutado por cliente
-            printf("Cliente Jugador 2\n");
-        }
-        else{ //Ejecutado aquí en server
-            printf("PID Jugador 2: %d\n", j2);
+        
+            j2 = fork();
+            if(j2 == 0){ //Ejecutado por cliente
+                printf("Cliente Jugador 2: %d\n", getpid());
+            }
+            else{ //Ejecutado aquí en server
+                printf("PID Jugador 2: %d\n", j2);
+            }
         }
     }
     if(numerojugadores>=3){
-        int j3, fd_c3;
+        if(j1 > 0 && j2 > 0){ //Pregunta si estamos en el proceso padre o raíz
+            //Tubería de Jugador 3
+            if(mkfifo(FIFONAME_J3, 666)){
+                perror("mkfifo");
+                return(1);
+            }
 
-        
-
-        //Tubería de Jugador 3
-        if(mkfifo(FIFONAME_J3, 666)){
-            perror("mkfifo");
-            return(1);
+            j3 = fork();
+            if(j3 == 0){ //Ejecutado por cliente
+                printf("Cliente Jugador 3\n");
+            }
+            else{ //Ejecutado aquí en server
+                printf("PID Jugador 3: %d\n", j3);
+            }        
         }
-        //Abre tubería de jugador 3
-        if(fd_c3 = open(FIFONAME_J3, O_RDWR) < 0){
-            perror("open");
-            return(2);
-        }
-
-        j3 = fork();
-        if(j3 == 0){ //Ejecutado por cliente
-            printf("Cliente Jugador 3\n");
-        }
-        else{ //Ejecutado aquí en server
-            printf("PID Jugador 3: %d\n", j3);
-        }        
     }
     if(numerojugadores==4){
-        int j4, fd_c4;
-
-        //Tubería de Jugador 4
-        if(mkfifo(FIFONAME_J4, 666)){
-            perror("mkfifo");
-            return(1);
-        }
-        //Abre tubería de jugador 4
-        if(fd_c4 = open(FIFONAME_J3, O_RDWR) < 0){
-            perror("open");
-            return(2);
-        }
-
-        j4 = fork();
-        if(j4 == 0){ //Ejecutado por cliente
-            printf("Cliente Jugador 4\n");
-        }
-        else{ //Ejecutado aquí en server
-            printf("PID Jugador 4: %d\n", j4);
+        if(j1 > 0 && j2 > 0 && j3 > 0){ //Pregunta si estamos en el proceso padre
+            //Tubería de Jugador 4
+            if(mkfifo(FIFONAME_J4, 666)){
+                perror("mkfifo");
+                return(1);
+            }
+            
+            j4 = fork();
+            if(j4 == 0){ //Ejecutado por cliente
+                printf("Cliente Jugador 4\n");
+            }
+            else{ //Ejecutado aquí en server
+                printf("PID Jugador 4: %d\n", j4);
+            }
         }
     }
+    //El montón de IFs se justifica porque primero debe correr eternamente el proceso PADRE, y sólo ese proceso
+    if(numerojugadores == 2){
+        if(j1 > 0 && j2 > 0){
+            while(1);
+        }
+        else{
+            run2Players(j1,j2,fd_c1,fd_c2,fd_g);
+        }
+    }
+    if(numerojugadores == 3){
+        if(j1 > 0 && j2 > 0 && j3){
+            while(1);
+        }
+        else{
+            run3Players(j1,j2,j3,fd_c1,fd_c2,fd_c3,fd_g);
+        }
+    }
+    if(numerojugadores == 4){
+        if(j1 > 0 && j2 > 0 && j3 && j4){
+            while(1);
+        }
+        else{
+            run4Players(j1,j2,j3,j4,fd_c1,fd_c2,fd_c3,fd_c4,fd_g);
+        }
+    }
+
     return 0;
 }
+
+void run2Players(int j1, int j2, int fd_c1, int fd_c2, int fd){
+    if ((fd_c1 = open(FIFONAME_J1, O_RDWR)) < 0)
+    {
+        perror("open C1");
+        exit(1);
+    }
+
+    if ((fd_c2 = open(FIFONAME_J2, O_RDWR)) < 0)
+    {
+        perror("open C2");
+        exit(1);
+    }
+
+    if ((fd = open(FIFONAME, O_RDWR)) < 0)
+    {
+        perror("open FDG");
+        exit(1);
+    }
+    printf("Caso de 2 jugadores\n");
+}
+void run3Players(int j1, int j2, int j3, int fd_c1, int fd_c2, int fd_c3, int fd){
+    if ((fd_c1 = open(FIFONAME_J1, O_RDWR)) < 0)
+    {
+        perror("open C1");
+        exit(1);
+    }
+
+    if ((fd_c2 = open(FIFONAME_J2, O_RDWR)) < 0)
+    {
+        perror("open C2");
+        exit(1);
+    }
+
+    if ((fd = open(FIFONAME, O_RDWR)) < 0)
+    {
+        perror("open FDG");
+        exit(1);
+    }
+
+    if ((fd_c3 = open(FIFONAME_J3, O_RDWR)) < 0)
+    {
+        perror("open C3");
+        exit(1);
+    }
+    printf("Caso de 3 jugadores\n");
+}
+
+void run4Players(int j1, int j2, int j3, int j4, int fd_c1, int fd_c2, int fd_c3, int fd_c4, int fd){
+    if ((fd_c1 = open(FIFONAME_J1, O_RDWR)) < 0)
+    {
+        perror("open C1");
+        exit(1);
+    }
+
+    if ((fd_c2 = open(FIFONAME_J2, O_RDWR)) < 0)
+    {
+        perror("open C2");
+        exit(1);
+    }
+
+    if ((fd = open(FIFONAME, O_RDWR)) < 0)
+    {
+        perror("open FDG");
+        exit(1);
+    }
+
+    if ((fd_c3 = open(FIFONAME_J3, O_RDWR)) < 0)
+    {
+        perror("open C3");
+        exit(1);
+    }
+    
+    if ((fd_c4 = open(FIFONAME_J4, O_RDWR)) < 0)
+    {
+        perror("open C4");
+        exit(1);
+    }
+    printf("Caso de 4 jugadores\n");
+}
+
 /*
 for(i=0;i<tamano;i++){
     for(j=0;j<tamano;j++){
