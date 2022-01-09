@@ -25,7 +25,8 @@
 //Semaforo, por el momento será variable global
 sem_t semaforo;
 
-void run2Players(int j1, int j2, int fd_c1, int fd_c2, int fd);
+
+void run2Players(int j1, int j2, int fd_c1, int fd_c2, int fd, int *x,int *y, int *ju);
 void run3Players(int j1, int j2, int j3, int fd_c1, int fd_c2, int fd_c3, int fd);
 void run4Players(int j1, int j2, int j3, int j4, int fd_c1, int fd_c2, int fd_c3, int fd_c4, int fd);
 int main (){
@@ -41,6 +42,7 @@ int main (){
     int tamano;
     int valores;
     int randomx,randomy;
+    int x=0,y=0,ju=0; 
     do{
         printf ("Ingrese el numero de jugadores ");
         scanf ("%d", &numerojugadores);
@@ -190,7 +192,10 @@ int main (){
             while(1);
         }
         else{
-            run2Players(j1,j2,fd_c1,fd_c2,fd_g);
+            while(1){
+                run2Players(j1,j2,fd_c1,fd_c2,fd_g, &x, &y, &ju);
+                printf("coordenada x:%d y:%d jugador:%d",x,y,ju);
+            }
         }
     }
     if(numerojugadores == 3){
@@ -213,44 +218,39 @@ int main (){
     return 0;
 }
 
-void run2Players(int j1, int j2, int fd_c1, int fd_c2, int fd){
+void run2Players(int j1, int j2, int fd_c1, int fd_c2, int fd,int *x, int *y, int *ju){
     printf("Caso de 2 jugadores\n");
-    int x=0,y=0,n;
+    int n;
     char buffer[1024];
-    sem_init(&semaforo, 1, 1);
-    while(1){
-        fd = open(FIFONAME, O_RDWR);
-        sem_wait(&semaforo);
-        if ((n = read(fd, buffer, sizeof(buffer))) > 0)
-        {
-            write(1, buffer, n);
-            x = buffer[0] - '0';
-            close(fd);
-        }
-        fd = open(FIFONAME, O_RDWR);
-        if ((n = read(fd, buffer, sizeof(buffer))) > 0)
-        {
-            write(1, buffer, n);
-            y = buffer[0] - '0';
-            close(fd);
-        }
-
-        sem_post(&semaforo);
-
-        fd_c1 = open(FIFONAME_J1, O_RDWR);
-        fd_c2 = open(FIFONAME_J2, O_RDWR);
-        if (j1==0)
-        {
-            write(fd_c1, "este es un mensaje\n", 21);
-            close(fd_c1);
-        }
-        else
-        {
-            write(fd_c2, "este es un mensaje 2\n", 21);
-            close(fd_c2);
-        }
+    fd_c1 = open(FIFONAME_J1, O_RDWR);
+    fd_c2 = open(FIFONAME_J2, O_RDWR);
+    if ((n = read(fd, buffer, sizeof(buffer))) > 0)
+    {
+        write(1, buffer, n);
+        *x = buffer[0] - '0';
+        close(fd);
     }
-    sem_destroy(&semaforo);
+    fd = open(FIFONAME, O_RDWR);
+    if ((n = read(fd, buffer, sizeof(buffer))) > 0)
+    {
+        write(1, buffer, n);
+        *y = buffer[0] - '0';
+        close(fd);
+    }
+
+    if (j1==0)
+    {
+        write(fd_c1, "muy lento\n", 21);
+        close(fd_c1);
+        *ju=2;
+    }
+    else
+    {
+        write(fd_c2, "muy lento\n", 21);
+        close(fd_c2);
+        *ju=1;
+    }
+   
 }
 void run3Players(int j1, int j2, int j3, int fd_c1, int fd_c2, int fd_c3, int fd){
     printf("Caso de 3 jugadores\n");
