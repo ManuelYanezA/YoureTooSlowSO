@@ -10,6 +10,8 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/sem.h>
+#include <pthread.h>
+#include <semaphore.h>
 
 #define TX 5
 #define TY 5
@@ -19,6 +21,9 @@
 #define FIFONAME_J2 "YourTooSlow_j2"
 #define FIFONAME_J3 "YourTooSlow_j3"
 #define FIFONAME_J4 "YourTooSlow_j4"
+
+//Semaforo, por el momento será variable global
+sem_t semaforo;
 
 void run2Players(int j1, int j2, int fd_c1, int fd_c2, int fd);
 void run3Players(int j1, int j2, int j3, int fd_c1, int fd_c2, int fd_c3, int fd);
@@ -30,6 +35,7 @@ int main (){
     unlink(FIFONAME_J2);
     unlink(FIFONAME_J3);
     unlink(FIFONAME_J4);
+
 
     int numerojugadores = 5;
     int tamano;
@@ -211,26 +217,40 @@ void run2Players(int j1, int j2, int fd_c1, int fd_c2, int fd){
     printf("Caso de 2 jugadores\n");
     int x=0,y=0,n;
     char buffer[1024];
+    sem_init(&semaforo, 1, 1);
     while(1){
+        fd = open(FIFONAME, O_RDWR);
+        sem_wait(&semaforo);
         if ((n = read(fd, buffer, sizeof(buffer))) > 0)
         {
             write(1, buffer, n);
             x = buffer[0] - '0';
+            close(fd);
         }
+        fd = open(FIFONAME, O_RDWR);
         if ((n = read(fd, buffer, sizeof(buffer))) > 0)
         {
             write(1, buffer, n);
             y = buffer[0] - '0';
+            close(fd);
         }
+
+        sem_post(&semaforo);
+
+        fd_c1 = open(FIFONAME_J1, O_RDWR);
+        fd_c2 = open(FIFONAME_J2, O_RDWR);
         if (j1==0)
-        { //juagado 1
+        {
             write(fd_c1, "este es un mensaje\n", 21);
+            close(fd_c1);
         }
         else
-        { //jugador 2
+        {
             write(fd_c2, "este es un mensaje 2\n", 21);
+            close(fd_c2);
         }
     }
+    sem_destroy(&semaforo);
 }
 void run3Players(int j1, int j2, int j3, int fd_c1, int fd_c2, int fd_c3, int fd){
     printf("Caso de 3 jugadores\n");
@@ -277,20 +297,20 @@ void run4Players(int j1, int j2, int j3, int j4, int fd_c1, int fd_c2, int fd_c3
             y = buffer[0] - '0';
         }
         if (j1==0)
-        { //juagado 1
+        {
             write(fd_c1, "este es un mensaje\n", 21);
         }
         else if(j2==0)
-        { //jugador 2
+        {
             write(fd_c2, "este es un mensaje 2\n", 21);
         }
         else if(j3==0)
         {
-            write(fd_c3, "este es un mensaje 2\n", 21);
+            write(fd_c3, "este es un mensaje 3\n", 21);
         }
         else
         {
-            write(fd_c4, "este es un mensaje 2\n", 21);
+            write(fd_c4, "este es un mensaje 4\n", 21);
         }
     }
 }
