@@ -1,3 +1,6 @@
+
+//Nicolás Millar - Manuel Yáñez
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,7 +14,6 @@
 #include <sys/types.h>
 #include <sys/sem.h>
 #include <pthread.h>
-#include <semaphore.h>
 
 #define TX 5
 #define TY 5
@@ -22,21 +24,18 @@
 #define FIFONAME_J3 "YourTooSlow_j3"
 #define FIFONAME_J4 "YourTooSlow_j4"
 
-//Semaforo, por el momento será variable global
-sem_t semaforo;
-
-
-void run2Players(int j1, int j2, int fd_c1, int fd_c2, int fd, int *x,int *y, int *ju);
+void run2Players(int j1, int j2, int fd_c1, int fd_c2, int fd,int *x, int *y, int *ju);
 void run3Players(int j1, int j2, int j3, int fd_c1, int fd_c2, int fd_c3, int fd);
 void run4Players(int j1, int j2, int j3, int j4, int fd_c1, int fd_c2, int fd_c3, int fd_c4, int fd);
+
 int main (){
+    fflush(stdout);
     //En caso de existir, cierra las tuberías abiertas.
     unlink(FIFONAME);
     unlink(FIFONAME_J1);
     unlink(FIFONAME_J2);
     unlink(FIFONAME_J3);
     unlink(FIFONAME_J4);
-
 
     int numerojugadores = 5;
     int tamano;
@@ -91,6 +90,13 @@ int main (){
         }while(matriz[randomx][randomy]!=0);
         matriz[randomx][randomy]=array[i];
     }
+    printf("Matriz para el juego:\n");
+    for(i=0;i<tamano;i++){
+        for(j=0;j<tamano;j++){
+            printf("%3d ", matriz[i][j]);
+        }
+        printf("\n");
+    }
     //PIDs guardados de los procesos hijos de cada jugador
     int j1, j2, j3, j4;
     //Definiciones para guardar el valor retornado al abrir tuberías
@@ -131,17 +137,17 @@ int main (){
         }
         j1 = fork(); //Se hace fork y el pid se almacena en j1
         if(j1 == 0){ //Caso en el que el fork retorne 0, es decir, esta parte se ejecuta en el hijo (o client)
-            printf("Cliente Jugador 1: %d\n", getpid());
+            //printf("Cliente Jugador 1: %d\n", getpid());
         }
         else{ //Caso en el que el fork retorna un PID, es decir, esta parte la ejecuta el server
-            printf("PID Jugador 1: %d\n", j1);
+            //printf("PID Jugador 1: %d\n", j1);
         
             j2 = fork();
             if(j2 == 0){ //Ejecutado por cliente
-                printf("Cliente Jugador 2: %d\n", getpid());
+                //printf("Cliente Jugador 2: %d\n", getpid());
             }
             else{ //Ejecutado aquí en server
-                printf("PID Jugador 2: %d\n", j2);
+                //printf("PID Jugador 2: %d\n", j2);
             }
         }
     }
@@ -158,10 +164,10 @@ int main (){
             }
             j3 = fork();
             if(j3 == 0){ //Ejecutado por cliente
-                printf("Cliente Jugador 3\n");
+                //printf("Cliente Jugador 3\n");
             }
             else{ //Ejecutado aquí en server
-                printf("PID Jugador 3: %d\n", j3);
+                //printf("PID Jugador 3: %d\n", j3);
             }        
         }
     }
@@ -179,10 +185,10 @@ int main (){
             }
             j4 = fork();
             if(j4 == 0){ //Ejecutado por cliente
-                printf("Cliente Jugador 4\n");
+                //printf("Cliente Jugador 4\n");
             }
             else{ //Ejecutado aquí en server
-                printf("PID Jugador 4: %d\n", j4);
+                //printf("PID Jugador 4: %d\n", j4);
             }
         }
     }
@@ -199,7 +205,7 @@ int main (){
         }
     }
     if(numerojugadores == 3){
-        if(j1 > 0 && j2 > 0 && j3){
+        if(j1 > 0 && j2 > 0 && j3 > 0){
             while(1);
         }
         else{
@@ -207,7 +213,7 @@ int main (){
         }
     }
     if(numerojugadores == 4){
-        if(j1 > 0 && j2 > 0 && j3 && j4){
+        if(j1 > 0 && j2 > 0 && j3 > 0 && j4 > 0){
             while(1);
         }
         else{
@@ -219,24 +225,43 @@ int main (){
 }
 
 void run2Players(int j1, int j2, int fd_c1, int fd_c2, int fd,int *x, int *y, int *ju){
-    printf("Caso de 2 jugadores\n");
+    //printf("Caso de 2 jugadores\n");
     int n;
+    
     char buffer[1024];
     fd_c1 = open(FIFONAME_J1, O_RDWR);
     fd_c2 = open(FIFONAME_J2, O_RDWR);
-    if ((n = read(fd, buffer, sizeof(buffer))) > 0)
-    {
-        write(1, buffer, n);
-        *x = buffer[0] - '0';
-        close(fd);
+    if(j1 == 0){
+        if ((n = read(fd, buffer, sizeof(buffer))) > 0)
+        {
+            write(1, buffer, n);
+            *x = buffer[0] - '0';
+            close(fd);
+        }
+        fd = open(FIFONAME, O_RDWR);
+        if ((n = read(fd, buffer, sizeof(buffer))) > 0)
+        {
+            write(1, buffer, n);
+            *y = buffer[0] - '0';
+            close(fd);
+        }
     }
-    fd = open(FIFONAME, O_RDWR);
-    if ((n = read(fd, buffer, sizeof(buffer))) > 0)
-    {
-        write(1, buffer, n);
-        *y = buffer[0] - '0';
-        close(fd);
+    else{
+        if ((n = read(fd, buffer, sizeof(buffer))) > 0)
+        {
+            write(1, buffer, n);
+            *x = buffer[0] - '0';
+            close(fd);
+        }
+        fd = open(FIFONAME, O_RDWR);
+        if ((n = read(fd, buffer, sizeof(buffer))) > 0)
+        {
+            write(1, buffer, n);
+            *y = buffer[0] - '0';
+            close(fd);
+        }
     }
+    
 
     if (j1==0)
     {
@@ -253,7 +278,7 @@ void run2Players(int j1, int j2, int fd_c1, int fd_c2, int fd,int *x, int *y, in
    
 }
 void run3Players(int j1, int j2, int j3, int fd_c1, int fd_c2, int fd_c3, int fd){
-    printf("Caso de 3 jugadores\n");
+    //printf("Caso de 3 jugadores\n");
     int x=0,y=0,n;
     char buffer[1024];
     while(1){
@@ -298,19 +323,19 @@ void run4Players(int j1, int j2, int j3, int j4, int fd_c1, int fd_c2, int fd_c3
         }
         if (j1==0)
         {
-            write(fd_c1, "este es un mensaje\n", 21);
+            write(fd_c1, "mensaje j1\n", 64);
         }
         else if(j2==0)
         {
-            write(fd_c2, "este es un mensaje 2\n", 21);
+            write(fd_c2, "mensaje j2\n", 64);
         }
         else if(j3==0)
         {
-            write(fd_c3, "este es un mensaje 3\n", 21);
+            write(fd_c3, "mensaje j3\n", 64);
         }
         else
         {
-            write(fd_c4, "este es un mensaje 4\n", 21);
+            write(fd_c4, "mensaje j4\n", 64);
         }
     }
 }

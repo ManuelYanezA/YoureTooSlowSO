@@ -74,9 +74,11 @@ int main(){
         {
             write(fd_g, buffer, n);
         }
+        sleep(1);//Espera 1 segundo antes de hacer algo más
         if ((n = read(fd_j, buffer, sizeof(buffer))) > 0)
         {
             write(1, buffer, n);
         }
+        sleep(1);//Espera 1 segundo antes de hacer algo más
     }
 }
