@@ -74,7 +74,7 @@ int main(){
         {
             write(fd_g, buffer, n);
         }
-        if ((n = read(fd_c2, buffer, sizeof(buffer))) > 0)
+        if ((n = read(fd_j, buffer, sizeof(buffer))) > 0)
         {
             write(1, buffer, n);
         }

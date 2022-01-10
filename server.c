@@ -268,11 +268,11 @@ void run3Players(int j1, int j2, int j3, int fd_c1, int fd_c2, int fd_c3, int fd
             y = buffer[0] - '0';
         }
         if (j1==0)
-        { //juagado 1
+        {
             write(fd_c1, "este es un mensaje\n", 21);
         }
         else if(j2==0)
-        { //jugador 2
+        {
             write(fd_c2, "este es un mensaje 2\n", 21);
         }
         else{
