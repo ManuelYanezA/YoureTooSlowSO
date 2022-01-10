@@ -301,7 +301,7 @@ void run3Players(int j1, int j2, int j3, int fd_c1, int fd_c2, int fd_c3, int fd
             write(fd_c2, "este es un mensaje 2\n", 21);
         }
         else{
-            write(fd_c3, "este es un mensaje 2\n", 21);
+            write(fd_c3, "este es un mensaje 3\n", 21);
         }
     }
 }
