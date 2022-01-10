@@ -14,19 +14,52 @@
 
 #define FIFONAME "YourTooSlow"
 #define FIFONAME_J1 "YourTooSlow_j1"
+#define FIFONAME_J2 "YourTooSlow_j2"
+#define FIFONAME_J3 "YourTooSlow_j3"
+#define FIFONAME_J4 "YourTooSlow_j4"
 
 int main(){
-    int n, fd_g, fd_c1;
+    int jugador=0;
+    int n, fd_g, fd_j;
     char buffer[1024];
-    if ((fd_c1 = open(FIFONAME_J1, O_RDWR)) < 0)
-    {
-       perror("open C1");
-       exit(1);
-    }
+    do{
+        printf ("Seleccione su numero de jugador ");
+        scanf ("%d", &jugador);
+    }while(jugador<1 || jugador>4);
     if ((fd_g = open(FIFONAME, O_RDWR)) < 0)
     {
         perror("open FDG");
         exit(1);
+    }
+    switch(jugador){
+        case 1:
+            if ((fd_j = open(FIFONAME_J1, O_RDWR)) < 0)
+            {
+                perror("open C1");
+                exit(1);
+            }
+            break;
+        case 2:
+            if ((fd_j = open(FIFONAME_J2, O_RDWR)) < 0)
+            {
+                perror("open C2");
+                exit(1);
+            }
+            break;
+        case 3:
+            if ((fd_j = open(FIFONAME_J3, O_RDWR)) < 0)
+            {
+                perror("open C3");
+                exit(1);
+            }
+            break;
+        case 4:
+            if ((fd_j = open(FIFONAME_J4, O_RDWR)) < 0)
+            {
+                perror("open C4");
+                exit(1);
+            }
+            break;
     }
     while(1){
         //Envía coordenadas al servidor
@@ -41,8 +74,7 @@ int main(){
         {
             write(fd_g, buffer, n);
         }
-
-        if ((n = read(fd_c1, buffer, sizeof(buffer))) > 0)
+        if ((n = read(fd_c2, buffer, sizeof(buffer))) > 0)
         {
             write(1, buffer, n);
         }
