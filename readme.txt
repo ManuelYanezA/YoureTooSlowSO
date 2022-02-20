@@ -4,6 +4,10 @@
 |                                                      |
 --------------------------------------------------------
 
+Proyecto semestral de Sistemas Operativos que consiste en un juego multijugador (Entre 2 a 4 jugadores) llamado "You're too slow" utilizando diversas herramientas aprendidas en el semestre, entre ellas semáforos y tuberías.
+A continuación algunas instrucciones para su uso, solicitadas por el profesor para la entrega.
+
+
 (Aclaración: Todas las instrucciones se describen entre comillas)
 
 - Para compilar el proyecto, simplemente utilice en consola el comando "make".
